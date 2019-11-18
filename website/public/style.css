@@ -1,0 +1,23 @@
+.Container{
+	display:block;
+	width:500px;
+	margin:0 auto;
+}
+.wrapper {
+	text-align: center;
+}
+
+.button {
+	position: absolute;
+	top: 50%;
+}
+.card {
+    max-width: 290px;
+}
+.col a,.col p{
+	font-size:25px;
+}
+#sticky-footer {
+	position: relative;
+	flex-shrink: none;
+  }

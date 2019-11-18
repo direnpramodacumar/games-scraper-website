@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <title>ScanGames</title>
+
+    <!-- Required Stylesheets -->
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+    <link type="text/css" rel="stylesheet" href="style.css"/>
+    <!-- Required scripts -->
+
+    <!-- Axios library -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Vue library -->
+    <script src="https://unpkg.com/vue"></script>
+    <!-- Babel library -->
+    <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <!-- Bootstrap Vue library -->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+
+</head>
+
+<body>
+
+<div id="app">
+    <!-- Navigation Bar -->
+    <b-navbar  class="navbar navbar-dark bg-dark" toggleable="md" type="dark" variant="info">
+        <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
+        <b-navbar-brand href="/">ScanGames</b-navbar-brand>
+        <b-collapse is-nav id="nav_collapse">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/?q=ps4">PS4</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/?q=xboxone">XBOX ONE</a>
+                </li>
+            </ul>
+
+            <!-- Right aligned nav items -->
+            <b-navbar-nav class="ml-auto">
+                <b-navbar-nav class="ml-auto">
+                    <form class="form-inline" method="get">
+                        <input class="form-control mr-sm-2" type="search"  name="q" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" v-on:click="nextPage" type="submit">Search</button>
+                    </form>
+                </b-navbar-nav>
+            </b-navbar-nav>
+        </b-collapse>
+    </b-navbar>
+    <br>
+    <div class="container">
+            <div class="card-deck">
+            <div class="card" v-for="game in games" :key="game.imageId">
+                <img :src="game.image"  class="card-img-top">
+                <div class="card-body">
+                    <h4 class="card-title">{{game.name}}</h4>
+                </div>
+                <div class="card-footer">
+                    <a :href="'/product.html?id='+game.imageId" class="btn btn-primary">Price</a>
+                </div>
+            </div>
+        </div>
+        
+         <!--buttons for pagination-->
+
+        <div class="wrapper">
+            <p>Page Number: {{pageNumber}} of {{numPages}}</p>
+            <button  type="button" class="btn btn-primary" v-on:click="previousPage" id="previousPageButton"  disabled>Previous</button>
+            <button type="button" class="btn btn-primary" v-on:click="nextPage" id="nextPageButton">Next</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Start running your app -->
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            games: [],
+            numPages:0,
+            numItemsPerPage:5,
+            pageNumber:0,
+            sortColumn:''
+        },
+        methods : {
+            //Get all the games from the web service using Axios.
+            loadAllGames: function (){
+               
+                var localApp = this;
+                //calculate offset
+                var offset = this.pageNumber * this.numItemsPerPage;
+                //search path
+                var search = window.location.search;
+                //if search is empty place question mark if not place &
+                if(search == '') {
+                    var url = '/games?offset=' + offset + '&num_items=' + this.numItemsPerPage + this.sortColumn;
+                }
+                else {
+                    var url = '/games/search' + search + '&offset=' + offset + '&num_items=' + this.numItemsPerPage + this.sortColumn;
+
+                }
+                axios.get(url)//Send GET request to games path
+                    .then(function (response) {//Request successful
+                        //Point games in data to returned array of games
+                        localApp.games = response.data.data;
+                        //console.log(JSON.stringify(response.data.data));
+                        //calculate the number of pages
+                        localApp.numPages = Math.ceil(response.data.totNumItems/localApp.numItemsPerPage)-1;
+                        
+                    })
+                    .catch(function (error) {
+                        //Handle error
+                        console.log(error);
+                    });
+                   
+            },
+
+            //change the page to next
+            nextPage:function() {
+
+                //check if the previous button is disabled, if yes disable
+                if(document.getElementById("previousPageButton").disabled){
+                    document.getElementById("previousPageButton").disabled=false;
+                }
+                 //disable the next button if have reached the ends
+                if (this.pageNumber === this.numPages) {
+                    document.getElementById("nextPageButton").disabled = true;
+                }
+                else{
+                    //increase the page number
+                    this.pageNumber++;
+                    //load the next set of games
+                    this.loadAllGames();
+                }
+                
+               
+                
+            },
+
+            //change the page to previous
+            previousPage:function(){
+                //check if the next button is disabled, if yes disable
+                if(document.getElementById("nextPageButton").disabled){
+                    document.getElementById("nextPageButton").disabled=false;
+                }
+                //disable the previous button, if page starts 
+                if (this.pageNumber === 0) {
+                    document.getElementById("previousPageButton").disabled = true;
+                }  
+                else{
+                    //increase the page number
+                    this.pageNumber--;
+                    //load the next set of games
+                    this.loadAllGames();
+                }  
+            },
+        },
+        created: function(){
+            //Vue lifecycle hook, called when data is loaded.
+            //Load gamees from web servic
+            this.loadAllGames();
+           
+        }
+    })
+</script>
+<br>
+</body>
+</html>

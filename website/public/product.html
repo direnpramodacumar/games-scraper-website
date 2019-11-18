@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <title>ScanGames</title>
+
+    <!-- Required Stylesheets -->
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+    <link type="text/css" rel="stylesheet" href="style.css"/>
+    <!-- Required scripts -->
+
+    <!-- Axios library -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Vue library -->
+    <script src="https://unpkg.com/vue"></script>
+    <!-- Babel library -->
+    <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <!-- Bootstrap Vue library -->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+
+</head>
+
+<body>
+
+<div id="app">
+    <!-- Navigation Bar -->
+    <b-navbar  class="navbar navbar-dark bg-dark" toggleable="md" type="dark" variant="info">
+        <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
+        <b-navbar-brand href="/">ScanGames</b-navbar-brand>
+        <b-collapse is-nav id="nav_collapse">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="?q=ps4">PS4</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="?q=xboxone">XBOX ONE</a>
+                </li>
+            </ul>
+
+            <!-- Right aligned nav items -->
+            <b-navbar-nav class="ml-auto">
+                <b-navbar-nav class="ml-auto">
+                    <form class="form-inline" method="get">
+                        <input class="form-control mr-sm-2" type="search"  name="q" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    </form>
+                </b-navbar-nav>
+            </b-navbar-nav>
+        </b-collapse>
+    </b-navbar>
+    <br>
+    <div class="container">
+        <div class="card mb-3 mx-auto text-center" style="max-width: 800px;">
+            <div class="row no-gutters">
+                <div class="col-md-4">
+                    <img :src='games[0].image' class="card-img" :alt="games[0].name">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body" >
+                        <h2 class="card-title">{{games[0].name}}</h2>
+                        <div v-for="game in games" :key="game.id">
+                            <div class="row">
+                                <div class="col">
+                                    <a :href="game.url">{{game.retailer}}</a>
+                                </div>
+                                <div class="col">
+                                    <p class="card-text">£{{game.price}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
+</div>
+<!-- Start running your app -->
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            games: [],
+        },
+        methods : {
+
+            //Get all the games from the web service using Axios.
+            loadAllGames: function (){
+                var localApp = this;
+                //search path
+                var id=new URL(location.href).searchParams.get('id');
+                var search=new URL(location.href).searchParams.get('q');
+                if(search!==null)window.open("/?q="+search);
+                //if search is empty place question mark if not place &
+                if(id!='') {
+                    var url = '/games/' + id;
+                }
+                axios.get(url)//Send GET request to games path
+                    .then(function (response) {//Request successful
+                        //Point games in data to returned array of games
+                        localApp.games = response.data;
+                        console.log(JSON.stringify(response.data));
+                    })
+                    .catch(function (error) {
+                        //Handle error
+                        console.log(error);
+                    });
+            }
+        },
+        created: function(){//Vue lifecycle hook, called when data is loaded.
+            //Load gamees from web servic
+            this.loadAllGames();
+        }
+    })
+</script>
+</body>
+</html>
